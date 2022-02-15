@@ -1,0 +1,11 @@
+version: '3.7'
+
+services:
+  rabbitmq:
+    image: 'bitnami/rabbitmq:latest'
+    ports:
+        - "5672:5672"
+        - "15672:15672"
+    environment:
+        - RABBITMQ_USERNAME=user
+        - RABBITMQ_PASSWORD=user

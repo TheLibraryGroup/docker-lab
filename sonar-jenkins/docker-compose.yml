@@ -1,0 +1,70 @@
+version: "3.7"
+
+services:
+
+    jenkins:
+        image: jenkins/jenkins
+        container_name: Jenkins
+        restart: always
+        ports:
+            - '9093:8080'
+            - '50000:50000'
+        volumes:
+            - jenkins_data:/data/jenkins_home
+            - jenkins_data:/conf/jenkins_config
+        networks:
+            - network-sonarqube
+
+    db-sonarqube:
+        image: postgres
+        container_name: db-Sonarqube
+        restart: always
+        environment:
+            - POSTGRES_USER=sonarqube
+            - POSTGRES_PASSWORD=0772d325f18ba8596b36274dd06ce1dc
+            - POSTGRES_DB=sonarqube
+        volumes:
+            - postgresql_data:/data
+        networks:
+            - network-sonarqube
+
+    sonarqube:
+        image: sonarqube:lts
+        container_name: Sonarqube
+        restart: always
+        depends_on:
+            - db-sonarqube
+        environment:
+            - sonar.jdbc.username=sonarqube
+            - sonar.jdbc.url=jdbc:postgresql://db-sonarqube/sonarqube
+            - sonar.jdbc.password=0772d325f18ba8596b36274dd06ce1dc
+        ports:
+            - 9000:9000
+        volumes:
+            - sonar_conf:/opt/sonarqube/conf
+            - sonar_data:/opt/sonarqube/data
+            - sonar_extensions:/opt/sonarqube/extensions
+            - sonar_plugins:/opt/sonarqube/lib/bundled-plugins
+        networks:
+            - network-sonarqube
+
+networks:
+    network-sonarqube:
+
+volumes:
+    sonar_conf:
+    sonar_data:
+    sonar_extensions:
+    sonar_plugins:
+    postgresql_data:
+        driver: local
+        driver_opts:
+            type: 'none'
+            o: 'bind'
+            device: '/srv/postgresql/sonarqube'
+    jenkins_data:
+        driver: local
+        driver_opts:
+            type: 'none'
+            o: 'bind'
+            device: '/srv/jenkins'
